@@ -23,15 +23,14 @@ public class ProducerAtLeastOnceConfig {
   }
 
   @Bean
-  public Map<String, Object> producerConfig() {
+  public KafkaProducer<String, Object> kafkaProducer() {
+    return new KafkaProducer<>(producerConfig());
+  }
+
+  private Map<String, Object> producerConfig() {
     Map<String, Object> props = new HashMap<>(kafkaProperties.buildProducerProperties());
     props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, enableIdempotence);
     props.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, Integer.toString(maxInFlightRequestsPerConnection));
     return props;
-  }
-
-  @Bean
-  public KafkaProducer<String, Object> kafkaProducer() {
-    return new KafkaProducer<>(producerConfig());
   }
 }

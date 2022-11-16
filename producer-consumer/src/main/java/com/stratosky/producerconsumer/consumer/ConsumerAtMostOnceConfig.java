@@ -17,12 +17,11 @@ public class ConsumerAtMostOnceConfig {
   }
 
   @Bean
-  public Map<String, Object> consumerConfig() {
-    return new HashMap<>(kafkaProperties.buildConsumerProperties());
-  }
-
-  @Bean
   public KafkaConsumer<String, Object> kafkaConsumer() {
     return new KafkaConsumer<>(consumerConfig());
+  }
+
+  private Map<String, Object> consumerConfig() {
+    return new HashMap<>(kafkaProperties.buildConsumerProperties());
   }
 }
