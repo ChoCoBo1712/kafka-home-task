@@ -13,11 +13,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@ResponseBody
 @RequestMapping("/vehicles")
 public class VehicleSignalController {
   private static final Logger logger = LoggerFactory.getLogger(VehicleSignalController.class);
@@ -42,7 +40,7 @@ public class VehicleSignalController {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid data\n");
     }
 
-    ProducerRecord<Long, VehicleSignal> producerRecord = new ProducerRecord<>(topic, vehicleSignal);
+    ProducerRecord<Long, VehicleSignal> producerRecord = new ProducerRecord<>(topic, id, vehicleSignal);
     vehicleSignalProducer.send(producerRecord);
     logger.info("Message sent to input topic");
     return ResponseEntity.status(HttpStatus.ACCEPTED).body("Message accepted\n");

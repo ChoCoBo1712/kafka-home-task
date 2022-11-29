@@ -1,14 +1,17 @@
 package com.stratosky.taxiapp.config;
 
 import com.stratosky.taxiapp.entity.VehicleSignal;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Configuration
 public class ConsumerConfig {
   private final KafkaProperties kafkaProperties;
 
@@ -17,22 +20,29 @@ public class ConsumerConfig {
   }
 
   @Bean
-  @Scope("prototype")
-  public KafkaConsumer<Long, VehicleSignal> vehicleSignalsConsumer() {
-    return new KafkaConsumer<>(consumerConfig(true));
+  public ConcurrentKafkaListenerContainerFactory<Long, VehicleSignal> vehicleSignalListenerContainerFactory() {
+    ConcurrentKafkaListenerContainerFactory<Long, VehicleSignal> factory
+            = new ConcurrentKafkaListenerContainerFactory<>();
+    factory.setConsumerFactory(consumerFactoryWithCustomDeserializer());
+    return factory;
+  }
+
+  private ConsumerFactory<Long, VehicleSignal> consumerFactoryWithCustomDeserializer() {
+    Map<String, Object> props = new HashMap<>(kafkaProperties.buildConsumerProperties());
+    props.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+            "com.stratosky.taxiapp.entity.serialization.VehicleSignalDeserializer");
+    return new DefaultKafkaConsumerFactory<>(props);
   }
 
   @Bean
-  public KafkaConsumer<Long, Double> vehicleDistanceConsumer() {
-    return new KafkaConsumer<>(consumerConfig(false));
+  public ConcurrentKafkaListenerContainerFactory<Long, Double> vehicleDistanceListenerContainerFactory() {
+    ConcurrentKafkaListenerContainerFactory<Long, Double> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    factory.setConsumerFactory(consumerFactory());
+    return factory;
   }
 
-  private Map<String, Object> consumerConfig(boolean vehicleSignalDeserializer) {
+  private ConsumerFactory<Long, Double> consumerFactory() {
     Map<String, Object> props = new HashMap<>(kafkaProperties.buildConsumerProperties());
-    if (vehicleSignalDeserializer) {
-      props.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-              "com.stratosky.taxiapp.entity.serialization.VehicleSignalDeserializer");
-    }
-    return props;
+    return new DefaultKafkaConsumerFactory<>(props);
   }
 }

@@ -24,19 +24,20 @@ public class VehicleDistanceService {
 
   public void calculateAndSendDistance(Long id, VehicleSignal vehicleSignal) {
     double distance = calculate(id, vehicleSignal);
-    ProducerRecord<Long, Double> producerRecord = new ProducerRecord<>(topic, distance);
+    ProducerRecord<Long, Double> producerRecord = new ProducerRecord<>(topic, id, distance);
     vehicleDistanceProducer.send(producerRecord);
     logger.info("Message sent to output topic");
   }
 
   private double calculate(Long id, VehicleSignal vehicleSignal) {
     VehicleSignal cashedVehicleSignal = vehicleSignalMap.get(id);
+    double distance = 0;
     if (cashedVehicleSignal != null) {
-      vehicleSignalMap.put(id, vehicleSignal);
       double latitudeDistance = Math.abs(vehicleSignal.getLatitude() - cashedVehicleSignal.getLatitude());
       double longitudeDistance = Math.abs(vehicleSignal.getLongitude() - cashedVehicleSignal.getLongitude());
-      return Math.pow((Math.pow(latitudeDistance, 2) + Math.pow(longitudeDistance, 2)), 0.5);
+      distance = Math.pow((Math.pow(latitudeDistance, 2) + Math.pow(longitudeDistance, 2)), 0.5);
     }
-    return 0;
+    vehicleSignalMap.put(id, vehicleSignal);
+    return distance;
   }
 }

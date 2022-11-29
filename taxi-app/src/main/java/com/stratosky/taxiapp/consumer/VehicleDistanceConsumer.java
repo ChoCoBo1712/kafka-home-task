@@ -15,7 +15,8 @@ public class VehicleDistanceConsumer {
   private static final Logger logger = LoggerFactory.getLogger(VehicleDistanceConsumer.class);
   public final List<Double> distances = new ArrayList<>();
 
-  @KafkaListener(topics = "${app.kafka.output-topic}")
+  @KafkaListener(topics = "${app.kafka.output-topic}", concurrency = "3",
+          containerFactory = "vehicleDistanceListenerContainerFactory")
   public void consume(ConsumerRecord<Long, Double> record) {
     distances.add(record.value());
     logger.info("Vehicle with Key: " + record.key() + " drove a distance: " + record.value());

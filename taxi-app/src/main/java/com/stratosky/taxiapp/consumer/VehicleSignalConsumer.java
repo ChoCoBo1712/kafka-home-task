@@ -18,7 +18,7 @@ public class VehicleSignalConsumer {
     this.vehicleDistanceService = vehicleDistanceService;
   }
 
-  @KafkaListener(topics = "${app.kafka.input-topic}")
+  @KafkaListener(topics = "${app.kafka.input-topic}", containerFactory = "vehicleSignalListenerContainerFactory")
   public void consume(ConsumerRecord<Long, VehicleSignal> record) {
     logger.info("Received message from input topic");
     vehicleDistanceService.calculateAndSendDistance(record.key(), record.value());
